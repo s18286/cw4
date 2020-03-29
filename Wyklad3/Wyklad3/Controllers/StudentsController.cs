@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Wyklad3.Models;
@@ -11,7 +13,7 @@ namespace Wyklad3.Controllers
     public class StudentsController : ControllerBase
     {
         private IDbService _dbService;
-
+        string myDatabase = "Data Source=db-mssql;Initial Catalog=s18286;Integrated Security=True";
         public StudentsController(IDbService service)
         {
             _dbService = service;
@@ -19,14 +21,32 @@ namespace Wyklad3.Controllers
 
         //2. QueryString
         [HttpGet]
-        public IActionResult GetStudents([FromServices]IDbService service, [FromQuery]string orderBy)
+        public IActionResult GetStudents([FromServices]IDbService service)
         {
-            if (orderBy == "lastname")
-            {
-                return Ok(_dbService.GetStudents().OrderBy(s => s.LastName));
-            }
+            var list = new List<Student>();
 
-            return Ok(_dbService.GetStudents());
+            using (SqlConnection connection = new SqlConnection(myDatabase))
+            using (SqlCommand command = new SqlCommand())
+            {
+                command.Connection = connection;
+                command.CommandText = "select * from Student";
+
+                connection.Open();
+
+                SqlDataReader sqlDataReader = command.ExecuteReader();
+                while (sqlDataReader.Read())
+                {
+                    Console.WriteLine(sqlDataReader["IndexNumber"].ToString());
+                    var student = new Student
+                    {
+                        IndexNumber = sqlDataReader["IndexNumber"].ToString(),
+                        LastName = sqlDataReader["LastName"].ToString(),
+                        FirstName = sqlDataReader["FirstName"].ToString()
+                    };
+                    list.Add(student);
+                }
+            }
+            return Ok(list);
         }
 
         //[FromRoute], [FromBody], [FromQuery]
