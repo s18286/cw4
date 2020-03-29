@@ -66,9 +66,9 @@ namespace Wyklad3.Controllers
                 command.Connection = connection;
                 string sqlQuery = "select s.FirstName, s.LastName, s.BirthDate, st.Name, e.Semester from Student s " +
                     "join Enrollment e on e.IdEnrollment = s.IdEnrollment join Studies st on st.IdStudy = e.IdStudy " +
-                    "where s.IndexNumber='"+ id + "'";
-                Console.WriteLine(sqlQuery);
+                    "where s.IndexNumber=@id";
                 command.CommandText = sqlQuery;
+                command.Parameters.AddWithValue("id", id);
 
                 connection.Open();
 
