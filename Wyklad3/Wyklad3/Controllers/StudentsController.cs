@@ -23,27 +23,28 @@ namespace Wyklad3.Controllers
         [HttpGet]
         public IActionResult GetStudents([FromServices]IDbService service)
         {
-            var list = new List<Student>();
+            var list = new List<StudentInfoDTO>();
 
             using (SqlConnection connection = new SqlConnection(myDatabase))
             using (SqlCommand command = new SqlCommand())
             {
                 command.Connection = connection;
-                command.CommandText = "select * from Student";
+                command.CommandText = "select s.FirstName, s.LastName, s.BirthDate, st.Name, e.Semester from Student s join Enrollment e on e.IdEnrollment = s.IdEnrollment join Studies st on st.IdStudy = e.IdStudy";
 
                 connection.Open();
 
                 SqlDataReader sqlDataReader = command.ExecuteReader();
                 while (sqlDataReader.Read())
                 {
-                    Console.WriteLine(sqlDataReader["IndexNumber"].ToString());
-                    var student = new Student
+                    var studentInfoDTO = new StudentInfoDTO
                     {
-                        IndexNumber = sqlDataReader["IndexNumber"].ToString(),
+                        BirthDate = sqlDataReader["BirthDate"].ToString(),
                         LastName = sqlDataReader["LastName"].ToString(),
-                        FirstName = sqlDataReader["FirstName"].ToString()
+                        FirstName = sqlDataReader["FirstName"].ToString(),
+                        Name = sqlDataReader["Name"].ToString(),
+                        Semester = sqlDataReader["Semester"].ToString()
                     };
-                    list.Add(student);
+                    list.Add(studentInfoDTO);
                 }
             }
             return Ok(list);
