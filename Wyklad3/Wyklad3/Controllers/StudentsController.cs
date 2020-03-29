@@ -19,6 +19,8 @@ namespace Wyklad3.Controllers
             _dbService = service;
         }
 
+
+        // localhost:59304/api/students/2'; drop table Student
         //2. QueryString
         [HttpGet]
         public IActionResult GetStudents([FromServices]IDbService service)
