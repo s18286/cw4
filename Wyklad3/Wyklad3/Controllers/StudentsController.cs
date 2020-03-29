@@ -29,7 +29,8 @@ namespace Wyklad3.Controllers
             using (SqlCommand command = new SqlCommand())
             {
                 command.Connection = connection;
-                command.CommandText = "select s.FirstName, s.LastName, s.BirthDate, st.Name, e.Semester from Student s join Enrollment e on e.IdEnrollment = s.IdEnrollment join Studies st on st.IdStudy = e.IdStudy";
+                command.CommandText = "select s.FirstName, s.LastName, s.BirthDate, st.Name, e.Semester from Student s " +
+                    "join Enrollment e on e.IdEnrollment = s.IdEnrollment join Studies st on st.IdStudy = e.IdStudy";
 
                 connection.Open();
 
@@ -53,14 +54,37 @@ namespace Wyklad3.Controllers
         //[FromRoute], [FromBody], [FromQuery]
         //1. URL segment
         [HttpGet("{id}")]
-        public IActionResult GetStudent([FromRoute]int id) //action method
+        public IActionResult GetStudent([FromRoute]string id) //action method
         {
-            if (id == 1)
-            {
-                return Ok("Jan");
-            }
+            var list = new List<StudentInfoDTO>();
 
-            return NotFound("Student was not found");
+            using (SqlConnection connection = new SqlConnection(myDatabase))
+            using (SqlCommand command = new SqlCommand())
+            {
+                command.Connection = connection;
+                string sqlQuery = "select s.FirstName, s.LastName, s.BirthDate, st.Name, e.Semester from Student s " +
+                    "join Enrollment e on e.IdEnrollment = s.IdEnrollment join Studies st on st.IdStudy = e.IdStudy " +
+                    "where s.IndexNumber='"+ id + "'";
+                Console.WriteLine(sqlQuery);
+                command.CommandText = sqlQuery;
+
+                connection.Open();
+
+                SqlDataReader sqlDataReader = command.ExecuteReader();
+                while (sqlDataReader.Read())
+                {
+                    var studentInfoDTO = new StudentInfoDTO
+                    {
+                        BirthDate = sqlDataReader["BirthDate"].ToString(),
+                        LastName = sqlDataReader["LastName"].ToString(),
+                        FirstName = sqlDataReader["FirstName"].ToString(),
+                        Name = sqlDataReader["Name"].ToString(),
+                        Semester = sqlDataReader["Semester"].ToString()
+                    };
+                    list.Add(studentInfoDTO);
+                }
+            }
+            return Ok(list);
         }
 
         //3. Body - cialo zadan
